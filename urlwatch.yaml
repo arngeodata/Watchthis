@@ -23,38 +23,26 @@ job_defaults:
 
 report:
   # Settings for individual reporters
-  # Stdout is enabled by default
+  # Stdout is enabled by default and will be used by the GitHub Action
   stdout:
     enabled: true
-    color: true
+    color: true # Color might not render well in logs, but doesn't hurt
 
-  # Email reporter configuration
+  # Email reporter configuration - DISABLED
+  # We will use a dedicated GitHub Action for sending email instead
   email:
-    # Enable this reporter
-    enabled: true
-    # Sender address
+    enabled: false # Make sure this is false
     from: "george@hyperion-partners.co.uk"
-    # Recipient address
     to: "george@hyperion-partners.co.uk"
-    # Subject line template
     subject: "urlwatch: {count} changes detected for {jobs}"
-    # Use SMTP to send emails
     method: smtp
-    # SMTP server settings
     smtp:
-      # SMTP server address
       host: "smtp.office365.com"
-      # SMTP server port
       port: 587
-      # Use STARTTLS encryption (required for port 587)
       starttls: true
-      # Use SMTP authentication
       auth: true
-      # SMTP username (often same as sender email)
       user: "george@hyperion-partners.co.uk"
-      # SMTP password - Provided via URLWATCH_EMAIL_PASSWORD environment variable
-      # Explicitly setting this empty might help bypass keyring lookup
-      password: ''
+      password: '' # Not used, keep empty or remove
 
   # Other reporters (disabled by default)
   discord:
