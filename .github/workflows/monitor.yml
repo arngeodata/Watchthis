@@ -17,19 +17,39 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Match the version used for installation
+          python-version: '3.10'
 
-      - name: Install dependencies
-        run: |
-          pip install urlwatch
-          pip install keyrings.alt # Install keyring backend for headless environment
+      - name: Install urlwatch
+        run: pip install urlwatch
 
-      - name: Run urlwatch with Email Notification
-        # This step runs urlwatch using the configuration files in the repository.
-        # It securely injects the email password from a GitHub Secret.
-        env:
-          URLWATCH_EMAIL_PASSWORD: ${{ secrets.URLWATCH_EMAIL_PASSWORD }}
-        run: urlwatch --urls urls.yaml --config urlwatch.yaml
+      - name: Run urlwatch and capture output
+        id: urlwatch_run
+        # Run urlwatch. Redirect both stdout and stderr to urlwatch_output.txt.
+        # Use --verbose for more detailed output in the email.
+        # continue-on-error: true allows the workflow to proceed even if urlwatch exits non-zero (e.g., on changes).
+        continue-on-error: true
+        run: urlwatch --urls urls.yaml --config urlwatch.yaml --verbose &> urlwatch_output.txt
 
-      # Optional: Add steps here to commit the urlwatch cache/database if needed.
+      - name: Send email notification if changes/errors detected
+        # Only run this step if the previous step 'failed' (i.e., urlwatch exited non-zero).
+        # This typically happens on NEW, CHANGED, or ERROR states.
+        if: steps.urlwatch_run.outcome == 'failure'
+        uses: dawidd6/action-send-mail@v3 # Using a specific version is recommended
+        with:
+          # SMTP server configuration (Office365)
+          server_address: smtp.office365.com
+          server_port: 587
+          # Credentials from GitHub Secrets
+          username: george@hyperion-partners.co.uk
+          password: ${{ secrets.URLWATCH_EMAIL_PASSWORD }}
+          # Email details
+          subject: "urlwatch: Changes Detected / Error Occurred"
+          # Use the captured output file as the email body
+          body_file: urlwatch_output.txt
+          to: george@hyperion-partners.co.uk
+          from: george@hyperion-partners.co.uk
+          # Specify content type if needed (default is usually text/plain)
+          # content_type: text/plain
+          # Connection security: 'secure: true' should enable STARTTLS for port 587 with this action
+          secure: true
 
