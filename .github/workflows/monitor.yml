@@ -19,22 +19,30 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install urlwatch
-        run: pip install urlwatch
+      - name: Install dependencies
+        run: |
+          pip install urlwatch
+          # pip install keyrings.alt # Keep this commented out for now
 
-      - name: Run urlwatch and capture output
+      - name: Verify urlwatch.yaml content
+        run: |
+          echo "--- Verifying urlwatch.yaml content: ---"
+          cat urlwatch.yaml
+          echo "--- End of urlwatch.yaml content ---"
+
+      - name: Run urlwatch (stdout only) and capture output
         id: urlwatch_run
-        # Run urlwatch. Redirect both stdout and stderr to urlwatch_output.txt.
-        # Use --verbose for more detailed output in the email.
-        # continue-on-error: true allows the workflow to proceed even if urlwatch exits non-zero (e.g., on changes).
+        # Run urlwatch, forcing ONLY stdout reporter. Redirect output.
+        # Use --verbose for more detailed output.
+        # continue-on-error: true allows the workflow to proceed even if urlwatch exits non-zero.
         continue-on-error: true
-        run: urlwatch --urls urls.yaml --config urlwatch.yaml --verbose &> urlwatch_output.txt
+        run: urlwatch --urls urls.yaml --config urlwatch.yaml --report stdout --verbose &> urlwatch_output.txt
 
       - name: Send email notification if changes/errors detected
         # Only run this step if the previous step 'failed' (i.e., urlwatch exited non-zero).
         # This typically happens on NEW, CHANGED, or ERROR states.
         if: steps.urlwatch_run.outcome == 'failure'
-        uses: dawidd6/action-send-mail@v3 # Using a specific version is recommended
+        uses: dawidd6/action-send-mail@v3
         with:
           # SMTP server configuration (Office365)
           server_address: smtp.office365.com
@@ -48,8 +56,6 @@ jobs:
           body_file: urlwatch_output.txt
           to: george@hyperion-partners.co.uk
           from: george@hyperion-partners.co.uk
-          # Specify content type if needed (default is usually text/plain)
-          # content_type: text/plain
           # Connection security: 'secure: true' should enable STARTTLS for port 587 with this action
           secure: true
 
