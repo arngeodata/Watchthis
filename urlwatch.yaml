@@ -1,0 +1,67 @@
+# Default urlwatch configuration file
+# See https://urlwatch.readthedocs.io/en/latest/config.html
+
+display:
+  # Show diff even if it's empty (e.g. filtering removed all content)
+  empty-diff: true
+  # Show errors
+  error: true
+  # Show new jobs
+  new: true
+  # Show unchanged jobs (can be noisy)
+  unchanged: false
+
+job_defaults:
+  # Default settings for all job kinds
+  all: {}
+  # Default settings for browser jobs
+  browser: {}
+  # Default settings for shell jobs
+  shell: {}
+  # Default settings for url jobs
+  url: {}
+
+report:
+  # Settings for individual reporters
+  # Stdout is enabled by default
+  stdout:
+    enabled: true
+    color: true
+
+  # Email reporter configuration
+  email:
+    # Enable this reporter
+    enabled: true
+    # Sender address
+    from: "george@hyperion-partners.co.uk"
+    # Recipient address
+    to: "george@hyperion-partners.co.uk"
+    # Subject line template
+    subject: "urlwatch: {count} changes detected for {jobs}"
+    # Use SMTP to send emails
+    method: smtp
+    # SMTP server settings
+    smtp:
+      # SMTP server address
+      host: "smtp.office365.com"
+      # SMTP server port
+      port: 587
+      # Use STARTTLS encryption (required for port 587)
+      starttls: true
+      # Use SMTP authentication
+      auth: true
+      # SMTP username (often same as sender email)
+      user: "george@hyperion-partners.co.uk"
+      # SMTP password - Provided via URLWATCH_EMAIL_PASSWORD environment variable
+      # Explicitly setting this empty might help bypass keyring lookup
+      password: ''
+
+  # Other reporters (disabled by default)
+  discord:
+    enabled: false
+    # ... other discord settings
+  gotify:
+    enabled: false
+    # ... other gotify settings
+  # ... other reporters ...
+
