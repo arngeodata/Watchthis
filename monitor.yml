@@ -1,0 +1,36 @@
+name: Monitor Website Changes
+
+on:
+  schedule:
+    # Runs every day at midnight UTC
+    - cron: '0 0 * * *'
+  # Allows running this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10' # Match the version used for installation
+
+      - name: Install urlwatch
+        run: pip install urlwatch
+
+      - name: Run urlwatch with Email Notification
+        # This step runs urlwatch using the configuration files in the repository.
+        # It securely injects the email password from a GitHub Secret.
+        env:
+          URLWATCH_EMAIL_PASSWORD: ${{ secrets.URLWATCH_EMAIL_PASSWORD }}
+        run: urlwatch --urls urls.yaml --config urlwatch.yaml
+
+      # Optional: Add steps here to commit the urlwatch cache/database if needed.
+      # Caching the database (~/.local/share/urlwatch/urlwatch.db) might be complex
+      # in Actions but prevents getting 'NEW' reports after every workflow run if the
+      # runner environment changes.
+
